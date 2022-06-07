@@ -2,12 +2,6 @@ name: docker
 
 on:
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Substreams release version"
-        required: false
-        type: string
-
   push:
     tags:
       - "v*"
@@ -23,12 +17,7 @@ jobs:
       - name: Get substreams release version
         id: version
         run: |
-          if [[ -z "${{ github.event.inputs.version }}" ]]; then
-            VERSION=$(curl --silent "https://api.github.com/repos/streamingfast/substreams/releases/latest" | jq -r '.tag_name | sub("^v"; "")')
-          else
-            VERSION=${{ github.event.inputs.version }}
-          fi
-
+          VERSION=$(curl --silent "https://api.github.com/repos/streamingfast/substreams/releases/latest" | jq -r '.tag_name | sub("^v"; "")')
           echo "::set-output name=version::$VERSION"
 
       - name: Docker meta
@@ -38,7 +27,6 @@ jobs:
           images: ghcr.io/${{ github.repository }}
           tags: |
             type=semver,pattern={{version}},value=${{ steps.version.outputs.version }}
-            type=sha
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
